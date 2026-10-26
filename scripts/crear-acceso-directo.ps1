@@ -1,4 +1,6 @@
 # Crea en el escritorio los accesos directos "Notas" (arrancar) y "Parar Notas".
+# Con -Local arranca con Node directamente (sin Podman/Docker).
+param([switch]$Local)
 $ErrorActionPreference = 'Stop'
 $root = Split-Path $PSScriptRoot -Parent
 $desktop = [Environment]::GetFolderPath('Desktop')
@@ -27,6 +29,11 @@ function New-Shortcut($name, $script, $args2) {
     if ($icon) { $lnk.IconLocation = $icon }
     $lnk.Save()
 }
-New-Shortcut 'Notas' 'scripts\start.ps1' ''
-New-Shortcut 'Parar Notas' 'scripts\stop.ps1' ''
+if ($Local) {
+    # Sin contenedores: un solo acceso directo; cerrar su ventana para la app.
+    New-Shortcut 'Notas' 'scripts\start-local.ps1' ''
+} else {
+    New-Shortcut 'Notas' 'scripts\start.ps1' ''
+    New-Shortcut 'Parar Notas' 'scripts\stop.ps1' ''
+}
 Write-Host "Accesos directos creados en el escritorio." -ForegroundColor Green

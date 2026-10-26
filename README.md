@@ -7,6 +7,9 @@ Hono (API) + React/Vite (frontend) en un solo contenedor. Compatible con Podman 
 1. Una vez: `powershell -ExecutionPolicy Bypass -File scripts\crear-acceso-directo.ps1` (crea "Notas" y "Parar Notas" en el escritorio).
 2. Doble clic en **Notas**: arranca `podman machine` si hace falta, levanta el contenedor y abre http://localhost:3000.
 
+### Sin contenedores (solo Node 22.18+)
+`powershell -ExecutionPolicy Bypass -File scriptscrear-acceso-directo.ps1 -Local` crea un acceso "Notas" que instala, compila y arranca con Node; cierra su ventana para parar. Usa los mismos `data/`, `backups/` y `.env`.
+
 ## Datos y copias
 - `data/notas.db` (SQLite) y `data/files/` (adjuntos): carpetas del PC, no volúmenes del motor. Ábrela con DBeaver (conexión SQLite).
 - `backups/`: copia diaria automática (30 últimas) + espejo de adjuntos. Botón manual en la barra lateral.
