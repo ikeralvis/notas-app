@@ -1,0 +1,16 @@
+services:
+  notas:
+    build: .
+    image: notas-app:latest
+    container_name: notas-app
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:3000:3000"   # solo accesible desde este PC
+    environment:
+      TZ: Europe/Madrid
+      BACKUP_EVERY_DAYS: ${BACKUP_EVERY_DAYS:-1}   # cada cuántos días se hace una copia automática
+    volumes:
+      # Carpetas del PC (no volúmenes del motor): si el contenedor o el volumen se borran, los datos siguen aquí.
+      # Cambia las rutas en un archivo .env (ver .env.example) para llevarlas a otro sitio, p.ej. OneDrive.
+      - ${NOTAS_DATA:-./data}:/data
+      - ${NOTAS_BACKUPS:-./backups}:/backups
