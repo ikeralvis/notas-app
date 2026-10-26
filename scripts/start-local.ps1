@@ -11,8 +11,8 @@ function Pause-Exit($msg) {
     exit 1
 }
 
-if (-not (Get-Command node -ErrorAction SilentlyContinue)) { Pause-Exit "Node.js no esta instalado. Descargalo de https://nodejs.org (version 22.18 o superior)." }
-if ([version]((node -v).TrimStart('v')) -lt [version]'22.18.0') { Pause-Exit "Hace falta Node 22.18 o superior (tienes $(node -v))." }
+if (-not (Get-Command node -ErrorAction SilentlyContinue)) { Pause-Exit "Node.js no esta instalado. Descargalo de https://nodejs.org (version 22.13 o superior)." }
+if ([version]((node -v).TrimStart('v')) -lt [version]'22.13.0') { Pause-Exit "Hace falta Node 22.13 o superior (tienes $(node -v))." }
 
 # Lee .env (NOTAS_DATA, NOTAS_BACKUPS, BACKUP_EVERY_DAYS) sin pisar variables ya definidas.
 if (Test-Path .env) {
@@ -55,7 +55,7 @@ $env:NODE_NO_WARNINGS = '1'
 Write-Host "Datos:   $data" -ForegroundColor DarkGray
 Write-Host "Copias:  $backups" -ForegroundColor DarkGray
 
-$server = Start-Process node -ArgumentList 'src/index.ts' -WorkingDirectory (Join-Path $root 'server') -NoNewWindow -PassThru
+$server = Start-Process node -ArgumentList '--experimental-strip-types','src/index.ts' -WorkingDirectory (Join-Path $root 'server') -NoNewWindow -PassThru
 
 $ok = $false
 for ($i = 0; $i -lt 30 -and -not $server.HasExited; $i++) {
