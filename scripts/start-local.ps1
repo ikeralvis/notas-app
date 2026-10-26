@@ -22,37 +22,43 @@ if (Test-Path .env) {
         }
     }
 }
+if (-not $PSBoundParameters.ContainsKey('Port') -and $env:NOTAS_PORT) { $Port = [int]$env:NOTAS_PORT }
 $data = if ($env:NOTAS_DATA) { $env:NOTAS_DATA } else { Join-Path $root 'data' }
 $backups = if ($env:NOTAS_BACKUPS) { $env:NOTAS_BACKUPS } else { Join-Path $root 'backups' }
 
-# Dependencias del servidor (solo la primera vez).
-if (-not (Test-Path server\node_modules)) {
-    Write-Host "Instalando dependencias del servidor..." -ForegroundColor Cyan
-    # Se entra en la carpeta en vez de usar --prefix: algunas versiones de npm lo ignoran.
-    Push-Location server
-    npm install --omit=dev --no-audit --no-fund
+# Instala dependencias si faltan o si package.json cambio (p. ej. tras un git pull).
+# Se entra en la carpeta en vez de usar --prefix: algunas versiones de npm lo ignoran.
+function Ensure-Deps($dir, $npmArgs) {
+    $marker = Join-Path $dir 'node_modules.package-lock.json'
+    $need = -not (Test-Path $marker)
+    if (-not $need) { $need = (Get-Item (Join-Path $dir 'package.json')).LastWriteTime -gt (Get-Item $marker).LastWriteTime }
+    if (-not $need) { return }
+    Write-Host "Instalando dependencias de $dir..." -ForegroundColor Cyan
+    Push-Location $dir
+    npm install @npmArgs --no-audit --no-fund
     $code = $LASTEXITCODE
     Pop-Location
-    if ($code -ne 0) { Pause-Exit "Fallo npm install (servidor)." }
+    if ($code -ne 0) { Pause-Exit "Fallo npm install en $dir." }
 }
+Ensure-Deps 'server' @('--omit=dev')
 
-# Compila el frontend si no existe o si cambio algo en web/src.
-$index = 'server\public\index.html'
+# Compila el frontend si no existe o si cambio algo en web (codigo o dependencias).
+$index = 'serverpublicindex.html'
 $stale = -not (Test-Path $index)
 if (-not $stale) {
-    $newest = Get-ChildItem web\src, web\index.html -Recurse -File | Sort-Object LastWriteTime -Descending | Select-Object -First 1
+    $newest = Get-ChildItem websrc, webindex.html, webpackage.json -Recurse -File | Sort-Object LastWriteTime -Descending | Select-Object -First 1
     $stale = $newest.LastWriteTime -gt (Get-Item $index).LastWriteTime
 }
 if ($stale) {
+    Ensure-Deps 'web' @()
     Write-Host "Compilando la interfaz..." -ForegroundColor Cyan
     Push-Location web
-    if (-not (Test-Path node_modules)) { npm install --no-audit --no-fund }
     npm run build
     $code = $LASTEXITCODE
     Pop-Location
     if ($code -ne 0) { Pause-Exit "Fallo la compilacion de la interfaz." }
-    if (Test-Path server\public) { Remove-Item -Recurse -Force server\public }
-    Copy-Item web\dist server\public -Recurse
+    if (Test-Path serverpublic) { Remove-Item -Recurse -Force serverpublic }
+    Copy-Item webdist serverpublic -Recurse
 }
 
 $env:DATA_DIR = $data
