@@ -5,7 +5,7 @@ services:
     container_name: notas-app
     restart: unless-stopped
     ports:
-      - "127.0.0.1:3000:3000"   # solo accesible desde este PC
+      - "127.0.0.1:${NOTAS_PORT:-3000}:3000"   # solo accesible desde este PC; cambia NOTAS_PORT en .env si el 3000 está ocupado
     environment:
       TZ: Europe/Madrid
       BACKUP_EVERY_DAYS: ${BACKUP_EVERY_DAYS:-1}   # cada cuántos días se hace una copia automática

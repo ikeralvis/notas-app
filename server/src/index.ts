@@ -321,6 +321,14 @@ const textToHtml = (t: string) =>
     .filter((p) => p.trim())
     .map((p) => `<p>${esc(p.trim()).replace(/\n/g, '<br>')}</p>`)
     .join('')
+/** Las tareas `- [ ]` de Markdown pasan a lista de tareas del editor. */
+const mdTasks = (html: string) =>
+  html
+    .replace(
+      /<li>(s*<p>)?s*<input (checked="" )?disabled="" type="checkbox">s*/g,
+      (_, p, c) => `<li data-type="taskItem" data-checked="${c ? 'true' : 'false'}">${p ?? ''}`,
+    )
+    .replace(/<ul>(s*<li data-type="taskItem")/g, '<ul data-type="taskList">$1')
 /** UTF-8 y, si no lo es (bloc de notas antiguo), Windows-1252. */
 function decode(buf: Buffer) {
   try {
@@ -350,7 +358,7 @@ app.post('/api/import', async (c) => {
     let html = ''
     if (isText) {
       const t = decode(buf)
-      html = /\.txt$/i.test(fname) ? textToHtml(t) : (marked.parse(t, { gfm: true, breaks: true }) as string)
+      html = /\.txt$/i.test(fname) ? textToHtml(t) : mdTasks(marked.parse(t, { gfm: true, breaks: true }) as string)
     }
     const stamp = f.lastModified ? new Date(f.lastModified).toISOString() : now()
     const id = tx(() => {

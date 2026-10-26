@@ -247,3 +247,12 @@ kbd { font: 10.5px var(--mono); padding: 1px 5px; border: 1px solid var(--line);
   .rt img, .rt pre, .rt blockquote { break-inside: avoid; }
   .rt .is-editor-empty::before { display: none; }
 }
+
+/* tablas */
+.rt table { border-collapse: collapse; width: 100%; table-layout: fixed; margin: 0.8em 0; overflow: hidden; }
+.rt th, .rt td { border: 1px solid var(--line); padding: 6px 10px; vertical-align: top; position: relative; min-width: 60px; }
+.rt th { background: var(--hover); font-weight: 600; text-align: left; }
+.rt td > p, .rt th > p { margin: 0; }
+.rt .selectedCell::after { content: ''; position: absolute; inset: 0; background: var(--accent-soft); pointer-events: none; }
+/* listas anidadas */
+.rt ul ul, .rt ol ol, .rt ul ol, .rt ol ul { margin-top: 0.1em; }

@@ -12,7 +12,11 @@ import Color from '@tiptap/extension-color'
 import TextAlign from '@tiptap/extension-text-align'
 import Image from '@tiptap/extension-image'
 import { SlashCommand } from './Slash'
-import { marked } from 'marked'
+import Table from '@tiptap/extension-table'
+import TableRow from '@tiptap/extension-table-row'
+import TableHeader from '@tiptap/extension-table-header'
+import TableCell from '@tiptap/extension-table-cell'
+import { looksLikeMarkdown, mdToHtml } from './markdown'
 import {
   AlignCenter, AlignLeft, AlignRight, Bold, Code, CodeSquare, Highlighter, Italic, Link2, List, ListChecks,
   ListOrdered, Minus, Palette, Quote, Redo2, Strikethrough, Underline as UnderlineIcon, Undo2,
@@ -22,7 +26,7 @@ const TEXT_COLORS = ['#e03131', '#e8590c', '#f08c00', '#2f9e44', '#1971c2', '#70
 const HIGHLIGHTS = ['#fff3bf', '#d3f9d8', '#d0ebff', '#e5dbff', '#ffd8e4', '#ffe8cc']
 
 /** Notas antiguas guardadas como Markdown se convierten a HTML al abrirlas. */
-const toHtml = (c: string) => (!c.trim() || c.trimStart().startsWith('<') ? c : (marked.parse(c, { gfm: true, breaks: true }) as string))
+const toHtml = (c: string) => (!c.trim() || c.trimStart().startsWith('<') ? c : mdToHtml(c, true))
 
 type Props = {
   initial: string
@@ -65,10 +69,24 @@ export function RichText({ initial, editable, onChange, onImage, editorRef }: Pr
       Color,
       TextAlign.configure({ types: ['heading', 'paragraph'] }),
       Image,
+      Table,
+      TableRow,
+      TableHeader,
+      TableCell,
       SlashCommand.configure({ pickImage: () => pickImage() }),
     ],
     editorProps: {
       handlePaste(view, event) {
+        // Markdown pegado como texto (p. ej. copiado de un .md o de una IA) -> se renderiza como bloques.
+        const cd = event.clipboardData
+        const text = cd?.getData('text/plain') ?? ''
+        const html = cd?.getData('text/html') ?? ''
+        const structured = /<(h[1-6]|ul|ol|li|strong|b|em|table|blockquote|pre|img)[s>]/i.test(html)
+        if (cd && text && looksLikeMarkdown(text) && !editorInst.current?.isActive('codeBlock') && (!html || cd.types.includes('vscode-editor-data') || !structured)) {
+          event.preventDefault()
+          editorInst.current?.commands.insertContent(mdToHtml(text))
+          return true
+        }
         const imgs = [...(event.clipboardData?.files ?? [])].filter((f) => f.type.startsWith('image/'))
         if (!imgs.length || !editorInst.current) return false
         event.preventDefault()

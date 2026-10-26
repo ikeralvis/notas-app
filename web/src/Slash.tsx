@@ -2,7 +2,7 @@ import { createRoot, type Root } from 'react-dom/client'
 import { Extension, type Editor, type Range } from '@tiptap/core'
 import Suggestion from '@tiptap/suggestion'
 import {
-  CodeSquare, Heading1, Heading2, Heading3, Image as ImageIcon, List, ListChecks, ListOrdered, Minus, Quote, Type,
+  CodeSquare, Heading1, Table as TableIcon, Heading2, Heading3, Image as ImageIcon, List, ListChecks, ListOrdered, Minus, Quote, Type,
 } from 'lucide-react'
 import type { ReactNode } from 'react'
 
@@ -20,6 +20,7 @@ const ITEMS: Item[] = [
   { title: 'Cita', hint: 'Texto destacado', icon: <Quote size={18} />, keys: 'cita quote', run: (e, r) => e.chain().focus().deleteRange(r).toggleBlockquote().run() },
   { title: 'Código', hint: 'Bloque de código', icon: <CodeSquare size={18} />, keys: 'codigo code', run: (e, r) => e.chain().focus().deleteRange(r).toggleCodeBlock().run() },
   { title: 'Separador', hint: 'Línea horizontal', icon: <Minus size={18} />, keys: 'separador linea divider hr', run: (e, r) => e.chain().focus().deleteRange(r).setHorizontalRule().run() },
+  { title: 'Tabla', hint: 'Filas y columnas', icon: <TableIcon size={18} />, keys: 'tabla table filas columnas', run: (e, r) => e.chain().focus().deleteRange(r).insertTable({ rows: 3, cols: 3, withHeaderRow: true }).run() },
   { title: 'Imagen', hint: 'Subir desde el PC', icon: <ImageIcon size={18} />, keys: 'imagen foto picture', run: (e, r, o) => (e.chain().focus().deleteRange(r).run(), o.pickImage()) },
 ]
 

@@ -2,7 +2,12 @@
 # 'Continue': docker/podman escriben avisos y progreso por stderr; el exito se comprueba con $LASTEXITCODE.
 $ErrorActionPreference = 'Continue'
 Set-Location (Split-Path $PSScriptRoot -Parent)
-$url = 'http://localhost:3000'
+$port = 3000
+if (Test-Path .env) {
+    $m = Select-String -Path .env -Pattern '^\s*NOTAS_PORT\s*=\s*(\d+)' | Select-Object -First 1
+    if ($m) { $port = [int]$m.Matches[0].Groups[1].Value }
+}
+$url = "http://localhost:$port"
 
 function Pause-Exit($msg) {
     Write-Host ""
@@ -46,7 +51,7 @@ $ok = $false
 for ($i = 0; $i -lt 60; $i++) {
     try {
         # WebRequest con Proxy nulo: Invoke-WebRequest usa el proxy del sistema y puede colgarse con localhost.
-        $req = [System.Net.WebRequest]::Create('http://127.0.0.1:3000/api/health')
+        $req = [System.Net.WebRequest]::Create("http://127.0.0.1:$port/api/health")
         $req.Proxy = $null
         $req.Timeout = 2000
         $resp = $req.GetResponse()
