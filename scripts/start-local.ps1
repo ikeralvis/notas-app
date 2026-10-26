@@ -28,8 +28,12 @@ $backups = if ($env:NOTAS_BACKUPS) { $env:NOTAS_BACKUPS } else { Join-Path $root
 # Dependencias del servidor (solo la primera vez).
 if (-not (Test-Path server\node_modules)) {
     Write-Host "Instalando dependencias del servidor..." -ForegroundColor Cyan
-    npm install --prefix server --omit=dev --no-audit --no-fund
-    if ($LASTEXITCODE -ne 0) { Pause-Exit "Fallo npm install (servidor)." }
+    # Se entra en la carpeta en vez de usar --prefix: algunas versiones de npm lo ignoran.
+    Push-Location server
+    npm install --omit=dev --no-audit --no-fund
+    $code = $LASTEXITCODE
+    Pop-Location
+    if ($code -ne 0) { Pause-Exit "Fallo npm install (servidor)." }
 }
 
 # Compila el frontend si no existe o si cambio algo en web/src.
@@ -41,9 +45,12 @@ if (-not $stale) {
 }
 if ($stale) {
     Write-Host "Compilando la interfaz..." -ForegroundColor Cyan
-    if (-not (Test-Path web\node_modules)) { npm install --prefix web --no-audit --no-fund }
-    npm run build --prefix web
-    if ($LASTEXITCODE -ne 0) { Pause-Exit "Fallo la compilacion de la interfaz." }
+    Push-Location web
+    if (-not (Test-Path node_modules)) { npm install --no-audit --no-fund }
+    npm run build
+    $code = $LASTEXITCODE
+    Pop-Location
+    if ($code -ne 0) { Pause-Exit "Fallo la compilacion de la interfaz." }
     if (Test-Path server\public) { Remove-Item -Recurse -Force server\public }
     Copy-Item web\dist server\public -Recurse
 }
