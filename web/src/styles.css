@@ -153,7 +153,8 @@ kbd { font: 10.5px var(--mono); padding: 1px 5px; border: 1px solid var(--line);
 .rt li > p { margin: 0.15em 0; }
 .rt ul[data-type='taskList'] { list-style: none; padding-left: 2px; }
 .rt ul[data-type='taskList'] li { display: flex; gap: 8px; align-items: flex-start; }
-.rt ul[data-type='taskList'] li > label { margin-top: 0.38em; user-select: none; }
+.rt ul[data-type='taskList'] li > label { user-select: none; flex: none; }
+.rt ul[data-type='taskList'] li > label input { margin: 0; }
 .rt ul[data-type='taskList'] li > div { flex: 1; }
 .rt ul[data-type='taskList'] input { accent-color: var(--accent); width: 15px; height: 15px; cursor: pointer; }
 .rt ul[data-type='taskList'] li[data-checked='true'] > div { color: var(--muted); text-decoration: line-through; }

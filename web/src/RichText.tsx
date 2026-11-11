@@ -11,6 +11,7 @@ import TextStyle from '@tiptap/extension-text-style'
 import Color from '@tiptap/extension-color'
 import TextAlign from '@tiptap/extension-text-align'
 import Image from '@tiptap/extension-image'
+import { Extension } from '@tiptap/core'
 import { SlashCommand } from './Slash'
 import Table from '@tiptap/extension-table'
 import TableRow from '@tiptap/extension-table-row'
@@ -24,6 +25,30 @@ import {
 
 const TEXT_COLORS = ['#e03131', '#e8590c', '#f08c00', '#2f9e44', '#1971c2', '#7048e8', '#868e96']
 const HIGHLIGHTS = ['#fff3bf', '#d3f9d8', '#d0ebff', '#e5dbff', '#ffd8e4', '#ffe8cc']
+
+/** Tab / Shift+Tab: sangrar listas (siempre capturado, para que nunca saque el foco del editor). */
+const Indent = Extension.create({
+  name: 'indent',
+  priority: 1000,
+  addKeyboardShortcuts() {
+    const kind = (e: Editor) => (e.isActive('taskItem') ? 'taskItem' : e.isActive('listItem') ? 'listItem' : null)
+    return {
+      Tab: ({ editor }) => {
+        if (editor.isActive('table')) return false
+        if (editor.isActive('codeBlock')) return editor.commands.insertContent('  ')
+        const k = kind(editor)
+        if (k) editor.commands.sinkListItem(k)
+        return true
+      },
+      'Shift-Tab': ({ editor }) => {
+        if (editor.isActive('table')) return false
+        const k = kind(editor)
+        if (k) editor.commands.liftListItem(k)
+        return true
+      },
+    }
+  },
+})
 
 /** Notas antiguas guardadas como Markdown se convierten a HTML al abrirlas. */
 const toHtml = (c: string) => (!c.trim() || c.trimStart().startsWith('<') ? c : mdToHtml(c, true))
@@ -73,6 +98,7 @@ export function RichText({ initial, editable, onChange, onImage, editorRef }: Pr
       TableRow,
       TableHeader,
       TableCell,
+      Indent,
       SlashCommand.configure({ pickImage: () => pickImage() }),
     ],
     editorProps: {
