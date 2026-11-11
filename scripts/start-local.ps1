@@ -43,10 +43,10 @@ function Ensure-Deps($dir, $npmArgs) {
 Ensure-Deps 'server' @('--omit=dev')
 
 # Compila el frontend si no existe o si cambio algo en web (codigo o dependencias).
-$index = 'serverpublicindex.html'
+$index = 'server/public/index.html'
 $stale = -not (Test-Path $index)
 if (-not $stale) {
-    $newest = Get-ChildItem websrc, webindex.html, webpackage.json -Recurse -File | Sort-Object LastWriteTime -Descending | Select-Object -First 1
+    $newest = Get-ChildItem web/src, web/index.html, web/package.json -Recurse -File | Sort-Object LastWriteTime -Descending | Select-Object -First 1
     $stale = $newest.LastWriteTime -gt (Get-Item $index).LastWriteTime
 }
 if ($stale) {
@@ -57,8 +57,8 @@ if ($stale) {
     $code = $LASTEXITCODE
     Pop-Location
     if ($code -ne 0) { Pause-Exit "Fallo la compilacion de la interfaz." }
-    if (Test-Path serverpublic) { Remove-Item -Recurse -Force serverpublic }
-    Copy-Item webdist serverpublic -Recurse
+    if (Test-Path server/public) { Remove-Item -Recurse -Force server/public }
+    Copy-Item web/dist server/public -Recurse
 }
 
 $env:DATA_DIR = $data
